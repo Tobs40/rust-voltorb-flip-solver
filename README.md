@@ -1,5 +1,5 @@
 # rust-voltorb-flip-solver
-An efficient tool for solving Voltorb Flip puzzles.
+An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
 
 No download link yet, features so far:  
 <ul>
