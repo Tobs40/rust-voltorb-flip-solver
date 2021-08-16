@@ -3,7 +3,7 @@ An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagard
 
 No download link yet, features so far:  
 <ul>
-<li>Uses all cores</li>
+<li>uses all cores</li>
 <li>kinda performant</li>
 <li>nice colorful graphic user interface, babyproof, worst you can do is restart the calculation</li>
 <li>provably optimal (someone provided me with Nintendo's level generation algorithm)</li>
