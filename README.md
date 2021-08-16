@@ -53,6 +53,7 @@ Future Goals:
       <li>"Maximize chance to get at least x coins", if you just need a few more coins for your favorite prize"</li>
     </ul>
   <li> Preferring the safer square when multiple ones have the same win chance</li>
-  </ul>
+  <li>Uploading videos about the algorithm on my YouTube channel "TriceraTobs" https://www.youtube.com/channel/UCuFm7Z4abH4q_El93bdpDQg</li>
+</ul>
 
 Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
