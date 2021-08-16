@@ -2,8 +2,6 @@
 
 An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
 
-Windows 64bit Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
-
 Features so far:  
 <ul>
   <li>uses all cores</li>
@@ -37,3 +35,5 @@ Note:
   <li>Maximizes the chance of winning the ENTIRE puzzle, doesn't care whether it dies in one or three moves</li>
   <li>I'm still working on it, those problems will be solved, there will be suitable modes</li>
 </ul>
+
+Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
