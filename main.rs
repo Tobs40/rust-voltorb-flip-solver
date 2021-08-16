@@ -11,6 +11,7 @@ mod possible_boards;
 mod search;
 mod gui;
 mod parsing;
+mod benchmark;
 
 use crate::gui::gui;
 use std::fs::File;
@@ -27,7 +28,19 @@ use crate::csp_valid::{count_valid_dumb, count_valid_smart};
 use rayon::prelude::*;
 use crate::csp_constraints::find_possible_boards;
 use crate::possible_boards::accumulate_symbol_weights;
+use crate::Mode::{BenchmarkNoGUI, GUI};
+use crate::benchmark::benchmark;
+
+enum Mode
+{
+    GUI,
+    BenchmarkNoGUI,
+}
 
 fn main() {
-    gui();
+    match GUI
+    {
+        GUI => gui(),
+        BenchmarkNoGUI => benchmark(),
+    };
 }
