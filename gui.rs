@@ -19,9 +19,6 @@ use dashmap::DashMap;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
-
-
-
 // gui controlling the search
 #[derive(Copy, Clone, Debug)]
 pub enum ControlMessage
@@ -249,7 +246,7 @@ fn tell_thread_state(
 
 pub fn gui() -> ()
 {
-    rayon::ThreadPoolBuilder::new().num_threads(12).build_global().unwrap();
+    //rayon::ThreadPoolBuilder::new().num_threads(12).build_global().unwrap();
 
     let (to_thread, from_gui) = unbounded();
     let to_thread_clone = to_thread.clone();
@@ -351,12 +348,19 @@ pub fn gui() -> ()
     const TITLE_CALCULATING_WIN_CHANCE: &str = "Calculating win chances...";
     const TITLE_TERMINAL_STATE: &str = "You won :)";
 
-    let puzzles = file_to_puzzles("examples.txt");
-    let nr = 348;
-
     // data structures which are set through the buttons
     let mut state = [[0; 5]; 5];
-    let (_, mut sr, mut sc, mut br, mut bc, mut level) = puzzles[nr-1];
+    let (_, mut sr, mut sc, mut br, mut bc, mut level) = {
+        if true
+        {
+            // load first puzzle of examples.txt without requiring the file
+            string_to_level_and_constraints("31010-11203-10110-11211-11101 1")
+        }
+        else {
+            // 348 in examples.txt is a hard one
+            file_to_puzzles("examples.txt")[348 -1]
+        }
+    };
 
     let mut half_button_size = 50;
 

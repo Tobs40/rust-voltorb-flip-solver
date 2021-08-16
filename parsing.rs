@@ -5,7 +5,7 @@ use std::io::BufRead;
 
 pub fn string_to_level_and_constraints(
     s: &str,
-) -> (usize, [usize;5], [usize;5], [usize;5], [usize;5])
+) -> (usize, [usize;5], [usize;5], [usize;5], [usize;5], usize)
 {
     let mut chars: Vec<char> = s.chars().collect();
     chars.retain(|x| *x != '-');
@@ -59,7 +59,7 @@ pub fn string_to_level_and_constraints(
         }
     }
 
-    (level, sr, sc, br, bc)
+    (0, sr, sc, br, bc, level)
 }
 
 pub fn file_to_puzzles(
@@ -73,7 +73,7 @@ pub fn file_to_puzzles(
     for line in lines {
         let s = line.expect("Can't read file");
         {
-            let (level, sr, sc, br, bc) = string_to_level_and_constraints(&s);
+            let (_, sr, sc, br, bc, level) = string_to_level_and_constraints(&s);
             puzzles.push((puzzles.len()+1, sr, sc, br, bc, level));
         }
     }
