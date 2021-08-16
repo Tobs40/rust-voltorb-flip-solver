@@ -32,6 +32,7 @@ Control:
   <li>choose the yellow squares (=free coins)</li>
   <li>if there are none wait for the dark blue ones (=highest chance to win, but possibly a bomb)</li>
   <li>grey means "useless" e.g. can't be a 2 or 3</li>
+  <li>the windows title tells you about ongoing calculations, whether the constraints are consistent and so on</li>
 </ul> 
 
 Note:
