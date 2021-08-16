@@ -9,6 +9,7 @@ An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagard
 
 Features so far:  
 <ul>
+  <li>first correct Voltorb Flip solver (Popular ones didn't even ask for the level :D). </li>
   <li>uses all cores</li>
   <li>very performant (given the difficulty of the task)</li>
   <li>nice colorful graphic user interface, missclick-proof, worst you can do is restart the calculation</li>
