@@ -18,9 +18,9 @@ Features so far:
 
 System requirements:  
 <ul>
-  <li>needs 30 seconds for the hardest puzzles on my laptop's i7-8750H (6 cores, hyperthreading) </li>
-  <li>less than 3 GB RAM even for the hardest puzzles</li>
-  <li>usually needs way less RAM and solves puzzles within a second or less </li>
+  <li>tested on > 200.000 puzzles sampled from the actual game</li>
+  <li>needs less than 30 seconds and 3 GB RAM for each puzzle tested (i7-8750H: 6 cores, hyperthreading)</li>
+  <li>usually solves puzzles within a second or less </li>
 </ul> 
 
 Control:  
