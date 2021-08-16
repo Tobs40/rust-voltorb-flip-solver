@@ -27,6 +27,7 @@ Control:
 
 Note:
 <ul>
+  <li>Starts out with puzzle 348 of examples.txt (tuff puzzle) and immediately starts calculating, just change the constraints to stop it</li>
   <li>Entering the level is just as crucial as the other constraints!</li>
   <li>Maximizes the chance of winning the ENTIRE puzzle, doesn't care whether it dies in one or three moves</li>
   <li>I'm still working on it, those problems will be solved, there will be suitable modes</li>
