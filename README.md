@@ -6,8 +6,8 @@ No download link yet, features so far:
 <li>uses all cores</li>
 <li>kinda performant</li>
 <li>nice colorful graphic user interface, babyproof, worst you can do is restart the calculation</li>
-<li>provably optimal (someone provided me with Nintendo's level generation algorithm)</li>
-<li>displays the actualy win chance and, if you're curious, the changes of being a bomb/1/2/3 for each square</li>
+<li>optimal and correct, assuming perfect randomness (someone provided me with Nintendo's level generation algorithm)</li>
+<li>displays the actualy win chance and, if you're curious, the chances of being a bomb/1/2/3 for each square</li>
 </ul> 
 
 System requirements:  
