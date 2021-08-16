@@ -1,6 +1,9 @@
 # rust-voltorb-flip-solver
 
-![image](https://user-images.githubusercontent.com/63099057/129618132-7642ce71-a68b-41cb-852b-8ee9f10f6f06.png)
+<p float="left">
+  <img src="https://user-images.githubusercontent.com/63099057/129618132-7642ce71-a68b-41cb-852b-8ee9f10f6f06.png" width="400" />
+  <img src="https://user-images.githubusercontent.com/63099057/129618351-7c640987-ff53-4360-9d2d-0f2dd872e077.png" width="400" /> 
+</p>
 
 An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
 
