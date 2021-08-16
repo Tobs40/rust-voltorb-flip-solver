@@ -1,10 +1,10 @@
 # rust-voltorb-flip-solver
 
-Windows 64bit Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
-
 An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
 
-No download link yet, features so far:  
+Windows 64bit Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
+
+Features so far:  
 <ul>
   <li>uses all cores</li>
   <li>very performant (given the difficulty of the task)</li>
