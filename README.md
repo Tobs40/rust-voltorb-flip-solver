@@ -39,7 +39,7 @@ Note:
 <ul>
   <li>Starts out with puzzle 1 of examples.txt (extremely easy puzzle)</li>
   <li>Entering the level is just as crucial as the other constraints!</li>
-  <li>Maximizes the chance of winning the ENTIRE puzzle, doesn't care whether it dies in one or three moves</li>
+  <li>Maximizes the chance of winning the ENTIRE puzzle, doesn't care whether it dies in one or three moves (yet)</li>
   <li>I'm still working on it, those problems will be solved, there will be suitable modes</li>
 </ul>
 
