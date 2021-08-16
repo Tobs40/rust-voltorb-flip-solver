@@ -246,6 +246,7 @@ fn tell_thread_state(
 
 pub fn gui() -> ()
 {
+    // run with all available logical cores or adjust using the line below
     //rayon::ThreadPoolBuilder::new().num_threads(12).build_global().unwrap();
 
     let (to_thread, from_gui) = unbounded();
@@ -354,7 +355,9 @@ pub fn gui() -> ()
         if true
         {
             // load first puzzle of examples.txt without requiring the file
-            string_to_level_and_constraints("31010-11203-10110-11211-11101 1")
+            // 348 31012-10021-03130-01003-20210 7
+            // 1   31010-11203-10110-11211-11101 1
+            string_to_level_and_constraints("31012-10021-03130-01003-20210 7")
         }
         else {
             // 348 in examples.txt is a hard one

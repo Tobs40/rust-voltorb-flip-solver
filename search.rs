@@ -532,10 +532,19 @@ fn try_swap_one_row_or_col(
                         let keep = ((cols_to_keep >> c) & 1) == 1;
                         if keep
                         {
-                            // can only deassign if both squares have values
-                            if (get_from_packed_state(packed_state, r1, c) != 0) || (get_from_packed_state(packed_state, r2, c) != 0)
+                            // can't keep if exactly one is assigned, the assigned/unassigned pattern wouldn't match
+                            if (get_from_packed_state(packed_state, r1, c) != 0) != (get_from_packed_state(packed_state, r2, c) != 0)
                             {
                                 da_is_feasible = false;
+                                break;
+                            }
+                        }
+                        else {
+                            // can't deassign if there's nothing to deassign
+                            if (get_from_packed_state(packed_state, r1, c) == 0) && (get_from_packed_state(packed_state, r2, c) == 0)
+                            {
+                                da_is_feasible = false;
+                                break;
                             }
                         }
                     }
@@ -621,9 +630,19 @@ fn try_swap_one_row_or_col(
                         let keep = ((cols_to_keep >> c) & 1) == 1;
                         if keep
                         {
-                            if (get_from_packed_state(packed_state, r1, c) != 0) || (get_from_packed_state(packed_state, r2, c) != 0)
+                            // can't keep if exactly one is assigned, the assigned/unassigned pattern wouldn't match
+                            if (get_from_packed_state(packed_state, r1, c) != 0) != (get_from_packed_state(packed_state, r2, c) != 0)
                             {
                                 da_is_feasible = false;
+                                break;
+                            }
+                        }
+                        else {
+                            // can't deassign if there's nothing to deassign
+                            if (get_from_packed_state(packed_state, r1, c) == 0) && (get_from_packed_state(packed_state, r2, c) == 0)
+                            {
+                                da_is_feasible = false;
+                                break;
                             }
                         }
                     }
