@@ -29,7 +29,7 @@ Control:
   <li>Click on buttons to advance their number by 1</li>
   <li>Pressing a number while doing so advances to that number straight away</li>
   <li>Program starts calculating automatically</li>
-  <li>Choose the yellow squares (=free coins)</li>
+  <li>Choose the yellow squares (=not a bomb, could be a 2 or 3 --> free coins)</li>
   <li>If there are none wait for the dark blue ones (=highest chance to win, but possibly a bomb)</li>
   <li>Grey means "useless" e.g. can't be a 2 or 3</li>
   <li>The windows title tells you about ongoing calculations, whether the constraints are consistent and so on</li>
@@ -49,7 +49,7 @@ Future Goals:
   <li>Modes like
     <ul>
       <li>"Maximize the chance not to drop in level"</li>
-      <li>"Win with 8" to also uncover 8 cards which the jump to the secret level 8 requires</li>
+      <li>"Win with 8" to also uncover at least 8 cards which the jump to the secret level 8 requires</li>
       <li>"Maximize chance to get at least x coins", if you just need a few more coins for your favorite prize"</li>
     </ul>
   <li> Preferring the safer square when multiple ones have the same win chance</li>
