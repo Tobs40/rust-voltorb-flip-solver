@@ -14,7 +14,7 @@ Features so far:
   <li>Very performant (given the difficulty of the task)</li>
   <li>Nice colorful graphic user interface, missclick-proof, worst you can do is restart the calculation</li>
   <li>Optimal and correct, assuming perfect randomness (someone provided me with Nintendo's level generation algorithm)</li>
-  <li>Displays the actualy win chance and, if you're curious, the chances of being a bomb/1/2/3 for each square when hovering over it</li>
+  <li>Displays the actual win chance and, if you're curious, the chances of being a bomb/1/2/3 for each square when hovering over it</li>
 </ul> 
 
 System requirements:  
