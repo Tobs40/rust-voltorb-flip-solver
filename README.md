@@ -22,7 +22,7 @@ System requirements:
   <li>Tested on > 200.000 puzzles sampled from the actual game</li>
   <li>Needed less than 30 seconds and 3 GB RAM for the tuffest puzzle (i7-8750H: 6 cores, hyperthreading)</li>
   <li>Usually solves puzzles within a few seconds</li>
-</ul> 
+</ul>
 
 Control:  
 <ul>
