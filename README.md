@@ -58,6 +58,5 @@ Future Goals:
 
 <br>
 <br>
-<br>
 
 Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
