@@ -46,7 +46,7 @@ pub fn compute_win_chance_exact(
 
     // get possible boards for original state
     let (o_pb, o_count, weights) = find_possible_boards(org_packed_state, &sr, &sc, &br, &bc, level);
-    //println!("Thread: Found {} states", o_pb.len());
+    log::info!("Thread: Found {} states", o_pb.len());
 
     // one big array for all depths and weights,
     // an list of indices marks the start of a depth-weight group,
@@ -80,7 +80,7 @@ pub fn compute_win_chance_exact(
     {
         return SearchResult::InconsistentPuzzle;
     } else {
-        //println!("Thread: Sending symbol probabilities to GUI");
+        info!("Thread: Sending symbol probabilities to GUI");
         to_gui.send(ReportMessage::SquareSymbols(acc.clone()))
             .expect("Failed to send symbol prob array to GUI");
     }
@@ -109,7 +109,7 @@ pub fn compute_win_chance_exact(
         let dur = start_of_computation.elapsed();
         let nodes = cache_chances.len();
 
-        //println!("Thread: Successfully computed {} nodes in {} seconds", nodes, dur.as_secs_f64());
+        info!("Thread: Successfully computed {} nodes in {} seconds", nodes, dur.as_secs_f64());
 
         SearchResult::SuccessfulSearchWithInfo(p, dur.as_secs_f64(), nodes)
     }
@@ -140,7 +140,7 @@ fn sh_exact_root(
 
     if is_terminal_state(packed_state, possible_boards, &indices, index_start, weights.len())
     {
-        //println!("Thread: Root state is terminal state, all 2/3 found");
+        info!("Thread: Root state is terminal state, all 2/3 found");
         return SearchResult::TerminalState;
     }
 

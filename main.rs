@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
+#[macro_use]
+extern crate log;
 
 mod csp_constraints;
 mod packed;
@@ -30,6 +32,8 @@ use crate::csp_constraints::find_possible_boards;
 use crate::possible_boards::accumulate_symbol_weights;
 use crate::Mode::{BenchmarkNoGUI, GUI};
 use crate::benchmark::benchmark;
+use env_logger::{fmt::Color, Env, Builder};
+
 
 enum Mode
 {
@@ -38,6 +42,18 @@ enum Mode
 }
 
 fn main() {
+
+    // change "info" to "warn" to hide thread-GUI communication
+    Builder::from_env(Env::default().default_filter_or("info"))
+        .format(|buf, record| {
+            writeln!(
+                buf,
+                "{}",
+                record.args()
+            )
+        })
+        .init();
+
     match GUI
     {
         GUI => gui(),

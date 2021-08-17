@@ -278,7 +278,7 @@ pub fn gui() -> ()
                 {
                     ControlMessage::Start => {
 
-                        //println!("Thread: Starting search");
+                        info!("Thread: Starting search");
 
                         let search_result = compute_win_chance_exact(
                             org_packed_state, &sr, &sc, &br, &bc, level,
@@ -287,13 +287,13 @@ pub fn gui() -> ()
                         match search_result
                         {
                             SearchResult::SuccessfulSearchWithInfo(prob, time, size) => {
-                                //println!("Thread: Search finished successfully, signalling successful search");
+                                info!("Thread: Search finished successfully, signalling successful search");
                                 to_gui.send(ReportMessage::FinishedSuccessfully(prob, time.round() as u64, size))
                                     .expect("Sending finished failed");
                             }
 
                             SearchResult::TerminalState => {
-                                //println!("Thread: Got terminal state as root state");
+                                info!("Thread: Got terminal state as root state");
                                 to_gui.send(ReportMessage::FinishedTerminalState)
                                     .expect("Sending finished failed");
                             }
@@ -304,13 +304,13 @@ pub fn gui() -> ()
                             }
 
                             SearchResult::Aborted => {
-                                //println!("Thread: Search has been aborted, sending stop confirmation");
+                                info!("Thread: Search has been aborted, sending stop confirmation");
                                 to_gui.send(ReportMessage::ConfirmStop)
                                     .expect("Sending stop confirmation failed");
                             }
 
                             SearchResult::InconsistentPuzzle => {
-                                //println!("Thread: Puzzle is inconsistent, telling GUI");
+                                info!("Thread: Puzzle is inconsistent, telling GUI");
                                 to_gui.send(ReportMessage::FinishedInconsistent)
                                     .expect("Failed to signal inconsistency to GUI");
                             }
@@ -318,13 +318,13 @@ pub fn gui() -> ()
                     },
 
                     ControlMessage::Stop => {
-                        //println!("Thread: Got stop signal (wasn't searching). Sending confirmation anyway.");
+                        info!("Thread: Got stop signal (wasn't searching). Sending confirmation anyway.");
                         to_gui.send(ReportMessage::ConfirmStop)
                             .expect("Sending stop confirmation failed");
                     },
 
                     ControlMessage::Constraints(sr_, sc_, br_, bc_, level_) => {
-                        //println!("Thread: Received new constraints, clearing the cache");
+                        info!("Thread: Received new constraints, clearing the cache");
                         sr = sr_;
                         sc = sc_;
                         br = br_;
@@ -334,7 +334,7 @@ pub fn gui() -> ()
                     },
 
                     ControlMessage::State(state_) => {
-                        //println!("Thread: Received new state");
+                        info!("Thread: Received new state");
                         org_packed_state = array_to_u64(&state_);
                     },
                 }
@@ -357,7 +357,7 @@ pub fn gui() -> ()
             // load first puzzle of examples.txt without requiring the file
             // 348 31012-10021-03130-01003-20210 7
             // 1   31010-11203-10110-11211-11101 1
-            string_to_level_and_constraints("31012-10021-03130-01003-20210 7")
+            string_to_level_and_constraints("31010-11203-10110-11211-11101 1")
         }
         else {
             // 348 in examples.txt is a hard one
@@ -580,7 +580,7 @@ pub fn gui() -> ()
                         window.resize(window.x(), window.y(), s, s);
                     }
 
-                    //println!("GUI: Got resize message, resized from {}x{} to {}x{}", old_width, old_height, s, s);
+                    info!("GUI: Got resize message, resized from {}x{} to {}x{}", old_width, old_height, s, s);
 
                     update_buttons(
                         &state,
@@ -604,7 +604,7 @@ pub fn gui() -> ()
                     old_height = window.height();
                 }
                 else {
-                    //println!("GUI: Got resize message but size is same as before")
+                    info!("GUI: Got resize message but size is same as before")
                 }
             },
             _ => (),
@@ -616,7 +616,7 @@ pub fn gui() -> ()
             match msg
             {
                 ReportMessage::FinishedInconsistent => {
-                    //println!("GUI: Puzzle is inconsistent");
+                    info!("GUI: Puzzle is inconsistent");
                     window.set_label(TITLE_INCONSISTENT);
                     for r in 0..5
                     {
@@ -628,12 +628,12 @@ pub fn gui() -> ()
                 },
 
                 ReportMessage::FinishedTerminalState => {
-                    //println!("GUI: Root state was terminal state");
+                    info!("GUI: Root state was terminal state");
                     window.set_label(TITLE_TERMINAL_STATE);
                 },
 
                 ReportMessage::FinishedSuccessfully(prob, time, nodes) => {
-                    //println!("GUI: Search finished successfully");
+                    info!("GUI: Search finished successfully");
                     if time == 0
                     {
                         window.set_label(&format!("Win chance: {:.2}%", prob * 100.0));
@@ -699,7 +699,7 @@ pub fn gui() -> ()
 
                 ReportMessage::SquareWinProb(r, c, p) => {
 
-                    //println!("GUI: Received win prob for square ({}, {}), it's {}", r, c, p);
+                    info!("GUI: Received win prob for square ({}, {}), it's {}", r, c, p);
 
                     let sp = symbol_probs.unwrap();
 
@@ -761,7 +761,7 @@ pub fn gui() -> ()
                 },
 
                 ReportMessage::SquareSymbols(sp) => {
-                    //println!("GUI: Received symbol probs for all squares");
+                    info!("GUI: Received symbol probs for all squares");
                     symbol_probs = Some(sp);
                     window.set_label(TITLE_CALCULATING_WIN_CHANCE);
                     for r in 0..5
@@ -801,7 +801,7 @@ pub fn gui() -> ()
                 }
 
                 ReportMessage::ConfirmStop => {
-                    //println!("GUI: Got a (probably redundant) stop signal confirmation in the main loop, ignoring it");
+                    info!("GUI: Got a (probably redundant) stop signal confirmation in the main loop, ignoring it");
                 }
             }
 
@@ -846,7 +846,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Square ({}, {}) was updated to {}", r, c, state[r][c]);
+                    info!("GUI: Square ({}, {}) was updated to {}", r, c, state[r][c]);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_state(&to_thread, &state);
@@ -870,7 +870,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Level was updated to {}", level);
+                    info!("GUI: Level was updated to {}", level);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_constraints(&to_thread, &sr, &sc, &br, &bc, level);
@@ -880,7 +880,7 @@ pub fn gui() -> ()
 
                 Reset => {
 
-                    //println!("GUI: Reset state, level and constraints");
+                    info!("GUI: Reset state, level and constraints");
 
                     for r in 0..5
                     {
@@ -910,7 +910,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Sum of points of row {} updated to {}", r, sr[r]);
+                    info!("GUI: Sum of points of row {} updated to {}", r, sr[r]);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_constraints(&to_thread, &sr, &sc, &br, &bc, level);
@@ -931,7 +931,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Sum of points of col {} updated to {}", c, sc[c]);
+                    info!("GUI: Sum of points of col {} updated to {}", c, sc[c]);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_constraints(&to_thread, &sr, &sc, &br, &bc, level);
@@ -955,7 +955,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Bomb count of row {} updated to {}", r, br[r]);
+                    info!("GUI: Bomb count of row {} updated to {}", r, br[r]);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_constraints(&to_thread, &sr, &sc, &br, &bc, level);
@@ -979,7 +979,7 @@ pub fn gui() -> ()
                         }
                     }
 
-                    //println!("GUI: Bomb count of col {} updated to {}", c, bc[c]);
+                    info!("GUI: Bomb count of col {} updated to {}", c, bc[c]);
 
                     tell_thread_to_stop_and_wait_till_it_is_stopped(&to_thread, &from_thread);
                     tell_thread_constraints(&to_thread, &sr, &sc, &br, &bc, level);
