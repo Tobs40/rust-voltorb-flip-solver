@@ -3,13 +3,13 @@ use crate::possible_boards::{accumulate_symbol_weights, filter_possible_boards_o
 use float_ord::FloatOrd;
 use crate::math::{transpose_in_place, count_assigned, print_board, count_special, print_board_with_cons, transpose_packed, count_assigned_packed};
 use std::collections::{HashSet, HashMap};
-use crate::packed::{array_to_u64, board_has_possible_2_3_for_state, get_from_packed_state, set_in_packed_state, u64_to_array};
+use crate::packed::{array_to_u64, board_has_possible_2_3_for_state, get_from_packed_state, set_in_packed_state, u64_to_array, coins_of_state};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use crate::csp_constraints::find_possible_boards;
 use std::convert::TryInto;
-use crate::gui::{ControlMessage, ReportMessage};
-use crossbeam_channel::{Sender, Receiver, unbounded};
+use crate::gui::{ControlMessage, ReportMessage, SearchMode};
+use crossbeam_channel::{Sender, Receiver, unbounded, tick, RecvError};
 use crate::search::SearchResult::SuccessfulSearch;
 use dashmap::DashMap;
 use rayon::prelude::*;
@@ -19,7 +19,7 @@ use dashmap::mapref::multiple::RefMulti;
 use std::thread;
 use tinyvec::array_vec;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SearchResult
 {
     SuccessfulSearchWithInfo(f64, f64, usize),
@@ -40,6 +40,8 @@ pub fn compute_win_chance_exact(
     from_gui: &Receiver<ControlMessage>,
     to_gui: &Sender<ReportMessage>,
     to_thread: &Sender<ControlMessage>,
+    mode: SearchMode,
+    threads: usize,
 ) -> SearchResult
 {
     let start_of_computation = Instant::now();
@@ -97,12 +99,35 @@ pub fn compute_win_chance_exact(
         &mut possible_boards,
         &mut indices,
         &weights,
-        &sr, &sc, &br, &bc,
+        &sr, &sc, &br, &bc, level,
         cache_chances,
         &from_gui,
         &to_gui,
         &to_thread,
+        mode,
+        threads,
     );
+
+    // TODO abort faster when changing threads or cache user input/adapt input handling so GUI appears fluent
+    if search_result == SearchResult::Aborted
+    {
+        // Eat that one stop message
+        info!("Thread: Filtering out the stop message since search has been aborted");
+        loop
+        {
+            match from_gui.recv().expect("from_gui said it's not empty but recv() failed")
+            {
+                ControlMessage::Stop => {
+                    info!("Thread: Found and killed stop message, let's continue");
+                    break;
+                },
+
+                msg => {
+                    panic!("Not supposed to receive {:?} here", msg);
+                },
+            }
+        }
+    }
 
     return if let SearchResult::SuccessfulSearch(p) = search_result
     {
@@ -120,7 +145,7 @@ pub fn compute_win_chance_exact(
 
 // separate root function to keep things clean and parallelize at root level
 fn sh_exact_root(
-    packed_state: u64,
+    state: u64,
     squares_by_depth: &mut Vec<Vec<(usize,usize)>>,
     possible_boards: &mut Vec<u64>,
     indices: &mut Vec<usize>,
@@ -129,24 +154,71 @@ fn sh_exact_root(
     sc: &[usize; 5],
     br: &[usize; 5],
     bc: &[usize; 5],
+    level: usize,
     cache_chances: &DashMap<u64, f64>,
     from_gui: &Receiver<ControlMessage>,
     to_gui: &Sender<ReportMessage>,
     to_thread: &Sender<ControlMessage>,
+    mode: SearchMode,
+    threads: usize,
 ) -> SearchResult
 {
     let depth = 0;
     let index_start = 0;
+    let index_end = weights.len();
 
-    if is_terminal_state(packed_state, possible_boards, &indices, index_start, weights.len())
+    if is_won_state(state, possible_boards, &indices, index_start, index_end)
     {
         info!("Thread: Root state is terminal state, all 2/3 found");
         return SearchResult::TerminalState;
     }
 
     let acc = accumulate_symbol_weights(
-        packed_state, possible_boards, &indices, index_start, weights
+        state, possible_boards, &indices, index_start, weights
     );
+
+    match mode
+    {
+        SearchMode::WinChance => {
+            if is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveLevel => {
+            if count_assigned_packed(state) >= level
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::WinEight => {
+            if count_assigned_packed(state) >= 8 &&
+                is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveEight => {
+            if count_assigned_packed(state) >= 8
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveNextMove => {
+            // Don't do anything, we want to search one move deep
+        }
+
+        SearchMode::Coins => {
+            if is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(coins_of_state(state) as f64);
+            }
+        }
+    }
 
     let mut jobs_per_square = [[0;5];5];
 
@@ -156,15 +228,18 @@ fn sh_exact_root(
     {
         for col in 0..5
         {
-            if get_from_packed_state(packed_state,row,col) == 0
+            if get_from_packed_state(state, row, col) == 0
             {
-                if acc[row][col][2] > 0.0 || acc[row][col][3] > 0.0
+                if acc[row][col][2] > 0.0 || acc[row][col][3] > 0.0 ||
+                    mode == SearchMode::WinEight ||
+                    mode == SearchMode::SurviveLevel ||
+                    mode == SearchMode::SurviveEight
                 {
                     for symbol in 1..4
                     {
                         if acc[row][col][symbol] != 0.0
                         {
-                            let state = set_in_packed_state(packed_state, row, col, symbol);
+                            let state = set_in_packed_state(state, row, col, symbol);
                             let job = (row, col, symbol, state, squares_by_depth.clone(), possible_boards.clone(), indices.clone());
                             jobs.push(job);
                             jobs_per_square[row][col] += 1;
@@ -177,25 +252,55 @@ fn sh_exact_root(
 
     let nr_jobs = jobs.len();
 
+    #[derive(Copy, Clone, Debug)]
+    pub enum Ticket
+    {
+        Ticket // Permission to be an active thread
+    }
+
+    let (ticket_sender, ticket_receiver) = unbounded();
+    for _ in 0..threads
+    {
+        ticket_sender.send(Ticket::Ticket).expect("Failed to send ticket");
+    }
+
     jobs.into_par_iter().for_each(
         {
             |(row, col, symbol, state, mut squares_by_depth, mut possible_boards, mut indices)| {
-                let search_result = sh_exact(
-                    1,
-                    state,
-                    &mut squares_by_depth,
-                    &mut possible_boards,
-                    &mut indices,
-                    index_start + &weights.len(),
-                    &weights,
-                    &sr, &sc, &br, &bc,
-                    &cache_chances,
-                    &from_gui,
-                    &to_thread
-                );
 
-                &send_results.send((row, col, symbol, search_result))
-                    .expect("Failed to send search result to root search thread");
+                match ticket_receiver.recv()
+                {
+                    Ok(msg) => {
+                        match msg
+                        {
+                            Ticket::Ticket => {
+
+                                // do the work
+                                let search_result = sh_exact(
+                                    1,
+                                    state,
+                                    &mut squares_by_depth,
+                                    &mut possible_boards,
+                                    &mut indices,
+                                    index_start + &weights.len(),
+                                    &weights,
+                                    &sr, &sc, &br, &bc, level,
+                                    &cache_chances,
+                                    &from_gui,
+                                    &to_thread,
+                                    mode,
+                                );
+
+                                &send_results.send((row, col, symbol, search_result))
+                                    .expect("Failed to send search result to root search thread");
+
+                                // put back the ticket
+                                ticket_sender.send(Ticket::Ticket).expect("Failed to put back ticket");
+                            }
+                        }
+                    }
+                    Err(_) => panic!("Error while waiting for ticket"),
+                }
             }
         }
     );
@@ -203,7 +308,7 @@ fn sh_exact_root(
     let mut received = 0;
     let mut aborted = false;
 
-    let mut highest_win_prob_so_far = 0.0;
+    let mut best_val_so_far = 0.0;
     let mut win_chances = [[0.0;5];5]; // just for determining the max.
 
     while received < nr_jobs
@@ -223,9 +328,9 @@ fn sh_exact_root(
                             to_gui.send(ReportMessage::SquareWinProb(row, col, win_chances[row][col]))
                                 .expect("Failed to send win probability for square");
 
-                            if win_chances[row][col] > highest_win_prob_so_far
+                            if win_chances[row][col] > best_val_so_far
                             {
-                                highest_win_prob_so_far = win_chances[row][col];
+                                best_val_so_far = win_chances[row][col];
                             }
                         }
                     }
@@ -245,14 +350,14 @@ fn sh_exact_root(
     return if aborted {
         SearchResult::Aborted
     } else {
-        SuccessfulSearch(highest_win_prob_so_far)
+        SuccessfulSearch(best_val_so_far)
     }
 }
 
-// Recursive search, basically makes up all of the runtime
+
 fn sh_exact(
     depth: usize,
-    mut packed_state: u64,
+    mut state: u64,
     squares_by_depth: &mut Vec<Vec<(usize,usize)>>,
     possible_boards: &mut Vec<u64>,
     indices: &mut Vec<usize>,
@@ -262,20 +367,21 @@ fn sh_exact(
     sc: &[usize; 5],
     br: &[usize; 5],
     bc: &[usize; 5],
-    cache_chances: &DashMap<u64, f64>,
+    level: usize,
+    cache: &DashMap<u64, f64>,
     from_gui: &Receiver<ControlMessage>,
     to_thread: &Sender<ControlMessage>,
+    mode: SearchMode,
 ) -> SearchResult
 {
-    if let Some(r) = cache_chances.get(&packed_state)
+    if let Some(r) = cache.get(&state)
     {
         return SearchResult::SuccessfulSearch(*r);
     }
 
-    // Slowing things down, make it every n steps or something again TODO
-    if depth == 7
+    if depth == 6
     {
-        match from_gui.try_recv() // not worse than calling it every 2^17 steps at all!
+        match from_gui.try_recv()
         {
             Err(_) => (),
             Ok(msg) => match msg
@@ -285,34 +391,83 @@ fn sh_exact(
                         .expect("Failed to pass Stop message on to other search threads");
                     return SearchResult::Aborted;
                 },
-                _ => panic!("Search thread received message other than Stop"),
+
+                msg => {
+                    panic!("Not supposed to receive {:?} here, only stop", msg);
+                },
             }
         }
     }
 
     // only create possible boards (expensive operation) after the cheaper checks
     filter_possible_boards_of_next_depth(
-        packed_state,
+        state,
         possible_boards,
         indices,
         index_start - weights.len(),
         weights,
     );
 
+    // when only one square is assigned?
+    let max_coins = possible_boards
+        .iter()
+        .skip(indices[index_start])
+        .map(|board| coins_of_state(*board))
+        .max()
+        .unwrap() as f64;
+
     let index_end = index_start + weights.len();
 
-    if is_terminal_state(packed_state, possible_boards, &indices, index_start, index_end)
+    match mode
     {
-        return SearchResult::SuccessfulSearch(1.0);
+        SearchMode::WinChance => {
+            if is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveLevel => {
+            if count_assigned_packed(state) >= level
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::WinEight => {
+            if count_assigned_packed(state) >= 8 &&
+                is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveEight => {
+            if count_assigned_packed(state) >= 8
+            {
+                return SearchResult::SuccessfulSearch(1.0);
+            }
+        }
+
+        SearchMode::SurviveNextMove => {
+            return SearchResult::SuccessfulSearch(1.0); // We've survived the next move :O
+        }
+
+        SearchMode::Coins => {
+            if is_won_state(state, possible_boards, &indices, index_start, index_end)
+            {
+                return SearchResult::SuccessfulSearch(coins_of_state(state) as f64);
+            }
+        }
     }
 
     let pb_left = indices[index_end] - indices[index_start];
 
     if pb_left >= 10
     {
-        match try_swap_one_row_or_col(packed_state,
+        match try_swap_one_row_or_col(state,
                                       &sr, &sc, &br, &bc,
-                                      cache_chances)
+                                      cache)
         {
             Some(r) => {
                 return SearchResult::SuccessfulSearch(r);
@@ -322,7 +477,7 @@ fn sh_exact(
     }
 
     let acc = accumulate_symbol_weights(
-        packed_state, possible_boards, &indices, index_start, weights
+        state, possible_boards, &indices, index_start, weights
     );
 
     squares_by_depth[depth].clear();
@@ -330,11 +485,15 @@ fn sh_exact(
     {
         for col in 0..5
         {
-            if get_from_packed_state(packed_state,row,col) == 0
+            if get_from_packed_state(state, row, col) == 0
             {
-                if acc[row][col][2] > 0.0 || acc[row][col][3] > 0.0
+                // 'useless' squares might be worthy of being picked in certain modes
+                if acc[row][col][2] > 0.0 || acc[row][col][3] > 0.0 ||
+                    mode == SearchMode::WinEight ||
+                    mode == SearchMode::SurviveEight ||
+                    mode == SearchMode::SurviveLevel
                 {
-                    if is_good_assignment(packed_state, &sr, &sc, &br, &bc, row, col)
+                    if is_good_assignment(state, &sr, &sc, &br, &bc, row, col)
                     {
                         squares_by_depth[depth].push((row, col));
                     }
@@ -349,7 +508,15 @@ fn sh_exact(
         }
     );
 
-    let mut highest_win_prob_so_far = 0.0;
+    let mut best_value_so_far = {
+        if mode == SearchMode::Coins
+        {
+            coins_of_state(state) as f64 // resigning is an option too
+        }
+        else {
+            0.0
+        }
+    };
 
     for i in 0..squares_by_depth[depth].len()
     {
@@ -361,7 +528,7 @@ fn sh_exact(
             for j in 0..i
             {
                 let (r2, c2) = squares_by_depth[depth][j];
-                if same_row_or_col_group(packed_state, &sr, &sc, &br, &bc, row, col, r2, c2)
+                if same_row_or_col_group(state, &sr, &sc, &br, &bc, row, col, r2, c2)
                 {
                     opposing_square_has_already_been_searched = true;
                 }
@@ -376,7 +543,15 @@ fn sh_exact(
 
         let mut expected_value = 0.0;
         let prob_not_bomb = acc[row][col][1] + acc[row][col][2] + acc[row][col][3];
-        let mut upper_bound_ev = prob_not_bomb;
+        let mut upper_bound_ev = {
+            if mode != SearchMode::Coins
+            {
+                prob_not_bomb
+            }
+            else {
+                prob_not_bomb * max_coins
+            }
+        };
 
         for symbol in 1..4
         {
@@ -386,25 +561,26 @@ fn sh_exact(
             }
 
             // cut if it can't be better than current best
-            if expected_value + upper_bound_ev <= highest_win_prob_so_far
+            if expected_value + upper_bound_ev <= best_value_so_far
             {
                 break;
             }
 
-            packed_state = set_in_packed_state(packed_state, row, col, symbol);
+            state = set_in_packed_state(state, row, col, symbol);
 
             if let SearchResult::SuccessfulSearch(r) = sh_exact(
                 depth + 1,
-                packed_state,
+                state,
                 squares_by_depth,
                 possible_boards,
                 indices,
                 index_start + weights.len(),
                 weights,
-                &sr, &sc, &br, &bc,
-                cache_chances,
+                &sr, &sc, &br, &bc, level,
+                cache,
                 &from_gui,
                 &to_thread,
+                mode,
             ) {
                 expected_value += r * acc[row][col][symbol];
                 upper_bound_ev -= acc[row][col][symbol];
@@ -413,22 +589,31 @@ fn sh_exact(
             }
         }
 
-        packed_state = set_in_packed_state(packed_state, row, col, 0);
+        state = set_in_packed_state(state, row, col, 0);
 
-        if expected_value > highest_win_prob_so_far
+        if expected_value > best_value_so_far
         {
-            highest_win_prob_so_far = expected_value;
+            best_value_so_far = expected_value;
         }
 
+        // no bomb, doesn't get any better than free information, this must be the best square
         if acc[row][col][0] == 0.0
         {
-            // no bomb, doesn't get any better than free information
-            break;
+            if mode != SearchMode::WinEight &&
+                mode != SearchMode::SurviveLevel &&
+                mode != SearchMode::SurviveEight
+            {
+                break;
+            }
+            else {
+                // but when trying to uncover at least a certain number of cards
+                // this might end the game too early, so don't skip here
+            }
         }
     }
 
-    cache_chances.insert(packed_state, highest_win_prob_so_far);
-    return SuccessfulSearch(highest_win_prob_so_far);
+    cache.insert(state, best_value_so_far);
+    return SuccessfulSearch(best_value_so_far);
 }
 
 
@@ -802,7 +987,7 @@ fn same_col_group(
 
 
 // terminate if there's no 2 or 3 left (game over, you win)
-fn is_terminal_state(
+fn is_won_state(
     packed_state: u64,
     possible_boards: &Vec<u64>,
     indices: &Vec<usize>,

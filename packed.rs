@@ -127,3 +127,30 @@ pub fn board_has_possible_2_3_for_state(
 
     has
 }
+
+
+pub fn coins_of_state(state: u64) -> usize
+{
+    let mut coins = 0;
+
+    for r in 0..5
+    {
+        for c in 0..5
+        {
+            let s = get_from_packed_state(state, r, c);
+
+            if s > 0
+            {
+                if coins == 0
+                {
+                    coins = s;
+                }
+                else {
+                    coins *= s;
+                }
+            }
+        }
+    }
+
+    coins
+}

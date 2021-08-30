@@ -1,27 +1,29 @@
 use std::path::Path;
 use std::io;
 use std::fs::File;
-use std::io::BufRead;
+use std::io::{BufRead, BufReader};
+use crate::packed::array_to_u64;
 
 pub fn string_to_level_and_constraints(
     s: &str,
-) -> (usize, [usize;5], [usize;5], [usize;5], [usize;5], usize)
+) -> (usize, [usize;5], [usize;5], [usize;5], [usize;5], usize, u64)
 {
     let mut chars: Vec<char> = s.chars().collect();
     chars.retain(|x| *x != '-');
     chars.retain(|x| *x != ' ');
+    chars.retain(|x| *x != '\r');
 
-    let mut a = [[127; 5]; 5];
+    let mut state = [[127; 5]; 5];
     for i in 0..5
     {
         for j in 0..5
         {
-            a[i][j] = match chars.get(i * 5 + j) {
+            state[i][j] = match chars.get(i * 5 + j) {
                 Some(c) => match c.to_digit(10) {
                     Some(d) => d as usize,
                     None => panic!("Failed converting char {} to integer", c),
                 },
-                None => panic!("Failed getting char from vector of chars"),
+                None => panic!("Failed getting char {} from vector of chars {:?}", i * 5 + j, chars),
             };
         }
     }
@@ -45,7 +47,7 @@ pub fn string_to_level_and_constraints(
     {
         for j in 0..5
         {
-            match a[i][j]
+            match state[i][j]
             {
                 0 => {
                     br[i] += 1;
@@ -59,32 +61,32 @@ pub fn string_to_level_and_constraints(
         }
     }
 
-    (0, sr, sc, br, bc, level)
+    (0, sr, sc, br, bc, level, array_to_u64(&state))
 }
 
-pub fn file_to_puzzles(
-    filename: &str
-) -> Vec<(usize, [usize;5], [usize;5], [usize;5], [usize;5], usize)>
+pub fn examples_357() -> Vec<(usize, [usize;5], [usize;5], [usize;5], [usize;5], usize, u64)>
+{
+    string_to_puzzles(include_str!("examples.txt"))
+}
+
+pub fn hardest_5() -> Vec<(usize, [usize;5], [usize;5], [usize;5], [usize;5], usize, u64)>
+{
+    string_to_puzzles(include_str!("hardest.txt"))
+}
+
+pub fn big_database_209885() -> Vec<(usize, [usize;5], [usize;5], [usize;5], [usize;5], usize, u64)>
+{
+    string_to_puzzles(include_str!("big_database.txt"))
+}
+
+fn string_to_puzzles(s: &str) -> Vec<(usize, [usize;5], [usize;5], [usize;5], [usize;5], usize, u64)>
 {
     let mut puzzles = Vec::new();
-
-    let lines = read_lines(filename).
-        expect("Failed to open file, maybe it's not there?");
+    let lines = s.split('\n');
     for line in lines {
-        let s = line.expect("Can't read file");
-        {
-            let (_, sr, sc, br, bc, level) = string_to_level_and_constraints(&s);
-            puzzles.push((puzzles.len()+1, sr, sc, br, bc, level));
-        }
+        let (_, sr, sc, br, bc, level, state) = string_to_level_and_constraints(line);
+        puzzles.push((puzzles.len()+1, sr, sc, br, bc, level, state));
     }
 
     puzzles
-}
-
-// The output is wrapped in a Result to allow matching on errors
-// Returns an Iterator to the Reader of the lines of the file.
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-    where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }

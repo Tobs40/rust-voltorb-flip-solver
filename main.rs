@@ -14,6 +14,8 @@ mod search;
 mod gui;
 mod parsing;
 mod benchmark;
+mod constraints;
+mod validate_symbol_probs;
 
 use crate::gui::gui;
 use std::fs::File;
@@ -30,15 +32,17 @@ use crate::csp_valid::{count_valid_dumb, count_valid_smart};
 use rayon::prelude::*;
 use crate::csp_constraints::find_possible_boards;
 use crate::possible_boards::accumulate_symbol_weights;
-use crate::Mode::{BenchmarkNoGUI, GUI};
+use crate::Mode::{BenchmarkNoGUI, GUI, ValidateNoGUI};
 use crate::benchmark::benchmark;
 use env_logger::{fmt::Color, Env, Builder};
+use crate::validate_symbol_probs::validate;
 
 
 enum Mode
 {
     GUI,
     BenchmarkNoGUI,
+    ValidateNoGUI,
 }
 
 fn main() {
@@ -58,5 +62,6 @@ fn main() {
     {
         GUI => gui(),
         BenchmarkNoGUI => benchmark(),
+        ValidateNoGUI => validate(),
     };
 }

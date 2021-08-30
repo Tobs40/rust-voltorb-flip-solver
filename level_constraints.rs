@@ -159,7 +159,7 @@ pub fn get_constraint(
 pub fn get_weights_array() -> [[f64; 10]; 9]
 {
     // how many states there are for each constraint as ordered by the get_constraint function
-    let count: [[usize;10];9] = [
+    let count: [[usize; 10]; 9] = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [1732660000, 81056200, 1407876600, 2598990000, 7039383000, 1732660000, 81056200, 1407876600, 2598990000, 7039383000],
         [3245678400, 5722702400, 17146024000, 811419600, 34336214400, 2684683200, 4495352000, 14348488000, 671170800, 26972112000],
@@ -177,13 +177,13 @@ pub fn get_weights_array() -> [[f64; 10]; 9]
     {
         for index in 0..10
         {
-            let w = 1.0/(count[level][index] as f64);
+            let w = 1.0 / (count[level][index] as f64);
             a[level][index] = w;
         }
     }
-    return a;
-}
 
+    a
+}
 
 pub fn print_cs_array()
 {
