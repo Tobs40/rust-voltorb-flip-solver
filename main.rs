@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
@@ -58,6 +59,8 @@ fn main() {
         })
         .init();
 
+    // DON'T FORGET TO REMOVE #![windows_subsystem = "windows"] at the top of main.rs
+    // or there won't be a console
     match GUI
     {
         GUI => gui(),
