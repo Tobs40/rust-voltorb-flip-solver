@@ -1,37 +1,41 @@
 # rust-voltorb-flip-solver
 
 <p float="left">
-  <img src="https://user-images.githubusercontent.com/63099057/129618132-7642ce71-a68b-41cb-852b-8ee9f10f6f06.png" width="400" />
-  <img src="https://user-images.githubusercontent.com/63099057/129618351-7c640987-ff53-4360-9d2d-0f2dd872e077.png" width="400" /> 
+  <img src="https://user-images.githubusercontent.com/63099057/131417534-4c1874e8-1e33-4cc5-8f55-cf16fde952b7.png" width="800" /> 
+  <img src="https://user-images.githubusercontent.com/63099057/131417642-df0c98d0-a996-40a9-bd6a-4d711db63263.png" width="800" /> 
 </p>
 
-An efficient tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
+Tool for solving Voltorb Flip puzzles (https://bulbapedia.bulbagarden.net/wiki/Voltorb_Flip).
 
 Features so far:  
 <ul>
   <li>First correct Voltorb Flip solver (Popular ones didn't even ask for the level :D). </li>
-  <li>Uses all cores</li>
-  <li>Very performant (given the difficulty of the task)</li>
+  <li>Many different modes so you can choose your favorite strategy!
+  <li>Can use any number of processor cores</li>
   <li>Nice colorful graphic user interface, missclick-proof, worst you can do is restart the calculation</li>
-  <li>Optimal and correct, assuming perfect randomness (someone provided me with Nintendo's level generation algorithm)</li>
-  <li>Displays the actual win chance and, if you're curious, the chances of being a bomb/1/2/3 for each square when hovering over it</li>
+  <li>Recommends the best move(s), assuming perfect randomness (someone provided me with Nintendo's level generation algorithm)</li>
+  <li>Displays the actual chance of succeeding so you can get mad about how unfairly hard this game is</li>
+  <li>Also displays the chances of being a bomb/1/2/3 for each square when hovering over it</li>
 </ul> 
 
 System requirements:  
 <ul>
-  <li>Tested on > 200.000 puzzles sampled from the actual game</li>
-  <li>Needed less than 30 seconds and 3 GB RAM for the tuffest puzzle (i7-8750H: 6 cores, hyperthreading)</li>
-  <li>Usually solves puzzles within a few seconds</li>
+  <li>Tested on 209.885 puzzles sampled from the actual game</li>
+  <li>Needed 65 seconds and 5 GB RAM for the tuffest puzzle in the most demanding 'WinEight' mode (i7-8750H: 6 cores, hyperthreading)</li>
+  <li>That's extremely(!) rare though, usually solves puzzles within a few seconds and much less RAM</li>
+  <li>You can always switch to another mode if it's taking too long
+  <li>Even your oldest PC can handle the 'SurviveNextMove' mode</li>
 </ul>
 
 Control:  
 <ul>
   <li>Click on buttons to advance their number by 1</li>
-  <li>Pressing a number while doing so advances to that number straight away</li>
+  <li>Holding down a key while doing so advances to that number straight away</li>
   <li>Program starts calculating automatically</li>
   <li>Choose the yellow squares (=not a bomb, could be a 2 or 3 --> free coins)</li>
   <li>If there are none wait for the dark blue ones (=highest chance to win, but possibly a bomb)</li>
   <li>Grey means "useless" e.g. can't be a 2 or 3</li>
+  <li>Note that for some modes yellow/gray squares don't make sense and thus aren't displayed
   <li>The windows title tells you about ongoing calculations, whether the constraints are consistent and so on</li>
 </ul> 
 
@@ -39,24 +43,18 @@ Note:
 <ul>
   <li>Starts out with puzzle 1 of examples.txt (extremely easy puzzle)</li>
   <li>Entering the level is just as crucial as the other constraints!</li>
-  <li>Maximizes the chance of winning the ENTIRE puzzle, doesn't care whether it dies in one or three moves (yet)</li>
-  <li>I'm still working on it, those problems will be solved</li>
+  <li>If you don't know what you're doing I'd recommend the 'SurviveNextMove' mode, it's the default for a reason</li>
+  <li>Modes are described in the GUI of the program, if you understand the Voltorb Flip game mechanics you'll understand why each mode exists</li>
+  <li>Don't be scared to switch between modes anytime, the results of other modes are cached, the performance penalty is very small
 </ul>
 
 Future Goals:
 <ul>
-  <li>More speed through smarter algorithm and better implementation</li>
-  <li>Modes like
-    <ul>
-      <li>"Maximize the chance not to drop in level"</li>
-      <li>"Win with 8" to also uncover at least 8 cards which the jump to the secret level 8 requires</li>
-      <li>"Maximize chance to get at least x coins", if you just need a few more coins for your favorite prize"</li>
-    </ul>
-  <li> Preferring the safer square when multiple ones have the same win chance</li>
   <li>Uploading videos about the algorithm on my YouTube channel "TriceraTobs":<br>https://www.youtube.com/channel/UCuFm7Z4abH4q_El93bdpDQg</li>
 </ul>
 
 <br>
 <br>
 
-Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
+Download of older version, only maximizing win chance: https://github.com/Tobs40/rust-voltorb-flip-solver/releases
+Download of current version: Coming up soon
