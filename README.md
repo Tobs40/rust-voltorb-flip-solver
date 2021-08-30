@@ -1,5 +1,7 @@
 # rust-voltorb-flip-solver
 
+<huge>There's a bug with the WinEight, SurviveLevel and SurviveEight mode, working on it!</huge>
+
 <p float="left">
   <img src="https://user-images.githubusercontent.com/63099057/131417534-4c1874e8-1e33-4cc5-8f55-cf16fde952b7.png" width="800" /> 
   <img src="https://user-images.githubusercontent.com/63099057/131417642-df0c98d0-a996-40a9-bd6a-4d711db63263.png" width="800" /> 
