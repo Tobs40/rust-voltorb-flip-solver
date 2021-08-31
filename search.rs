@@ -418,6 +418,10 @@ fn sh_exact(
 
     let index_end = index_start + weights.len();
 
+    // TODO Lost states are modeled implicitly by not adding anything
+    // But if I bomb after having uncovered x squares, haven't I still won?
+    // Is that handled?
+    // TODO in WinEight mode, the program recommended a 100% three ending with less than 8 squares
     match mode
     {
         SearchMode::WinChance => {
@@ -435,10 +439,15 @@ fn sh_exact(
         }
 
         SearchMode::WinEight => {
-            if count_assigned_packed(state) >= 8 &&
-                is_won_state(state, possible_boards, &indices, index_start, index_end)
+            if is_won_state(state, possible_boards, &indices, index_start, index_end)
             {
-                return SearchResult::SuccessfulSearch(1.0);
+                return if count_assigned_packed(state) >= 8
+                {
+                    SearchResult::SuccessfulSearch(1.0)
+                } else {
+                    // winning too early isn't worth anything
+                    SearchResult::SuccessfulSearch(0.0)
+                }
             }
         }
 
