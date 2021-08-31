@@ -57,6 +57,4 @@ Future Goals:
 <br>
 <br>
 
-BUG: There's a bug with the WinEight, SurviveLevel and SurviveEight mode, working on it!
-
 Download: https://github.com/Tobs40/rust-voltorb-flip-solver/releases/download/v0.2/rust_voltorb_flip.exe
