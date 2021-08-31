@@ -42,7 +42,7 @@ Control:
 
 Note:
 <ul>
-  <li>Starts out with puzzle 1 of examples.txt (extremely easy puzzle)</li>
+  <li>Starts out with the first puzzle in examples.txt (extremely easy puzzle)</li>
   <li>Entering the level is just as crucial as the other constraints!</li>
   <li>If you don't know what you're doing I'd recommend the 'SurviveNextMove' mode, it's the default for a reason</li>
   <li>Modes are described in the GUI of the program, if you understand the Voltorb Flip game mechanics you'll understand why each mode exists</li>
