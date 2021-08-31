@@ -22,7 +22,7 @@ System requirements:
 <ul>
   <li>Tested on 209.885 puzzles sampled from the actual game</li>
   <li>Needed 65 seconds and 5 GB RAM for the tuffest puzzle in the most demanding 'WinEight' mode (i7-8750H: 6 cores, hyperthreading)</li>
-  <li>That's extremely(!) rare though, usually solves puzzles within a few seconds and much less RAM</li>
+  <li>That's extremely(!) rare though, usually solves puzzles within a few seconds and much less RAM, you'll be more than fine with 3 GB</li>
   <li>You can always switch to another mode if it's taking too long
   <li>Even your oldest PC can handle the 'SurviveNextMove' mode</li>
 </ul>
