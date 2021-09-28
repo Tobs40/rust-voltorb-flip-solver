@@ -37,7 +37,7 @@ Control:
   <li>Grey means "useless" e.g. can't be a 2 or 3</li>
   <li>Note that for some modes yellow/gray squares don't make sense and thus aren't displayed
   <li>The windows title tells you about ongoing calculations, whether the constraints are consistent and so on</li>
-  <li>Click on the left and right arrows to adjust the number of threads. More threads make it run faster but leave less for other programs. Reducing the priority in the task manager might be good alternative though</li>
+  <li>Click on the left and right arrows to adjust the number of threads. More threads make it run faster but leave less for other programs. Reducing the priority in the task manager might be a good alternative though</li>
 </ul> 
 
 Note:
